@@ -1,3 +1,8 @@
+/** Clasa pentru Controller
+ * @author Moișanu Cristian-Vlad
+ * @version 11 Ianuarie 2026
+ */
+
 package com.upb.ProiectAWJ;
 
 import jakarta.persistence.*;

@@ -1,3 +1,8 @@
+/** Clasa pentru Controller, intermediaza View si Model
+ * @author Moișanu Cristian-Vlad
+ * @version 11 Ianuarie 2026
+ */
+
 package com.upb.ProiectAWJ;
 
 import org.springframework.beans.factory.annotation.Autowired;
