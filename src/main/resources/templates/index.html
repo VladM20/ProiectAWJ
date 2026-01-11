@@ -53,13 +53,12 @@
                             <a th:href="@{/toggleIndicator/{id}(id=${ind.id})}" class="text-dark" style="text-decoration: none;">
                                 <span th:if="${ind.realizat}">✅</span>
                                 <span th:unless="${ind.realizat}">⬜</span>
-                                <span th:text="${ind.nume} + ' (' + ${ind.pondere} + '%)'"></span>
+                                <span th:text="${ind.nume}"></span>
                             </a>
                         </div>
                     </li>
                 </ul>
             </div>
-
         </div>
     </div>
 

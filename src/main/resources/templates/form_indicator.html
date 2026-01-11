@@ -12,14 +12,9 @@
         <input type="hidden" th:field="*{activitate}" />
 
         <div class="form-group">
-            <label>Nume Indicator</label>
-            <input type="text" th:field="*{nume}" class="form-control" required>
-        </div>
-
-        <div class="form-group">
-            <label>Pondere din total (%)</label>
-            <input type="number" th:field="*{pondere}" class="form-control" min="1" max="100" required>
-            <small class="form-text text-muted">Cât la sută din activitate reprezintă acest task?</small>
+            <label>Nume Indicator (Sub-cerință)</label>
+            <input type="text" th:field="*{nume}" class="form-control" required placeholder="Ex: Citit capitolul 1">
+            <small class="text-muted">Procentajul activității se va recalcula automat în funcție de numărul de indicatori.</small>
         </div>
 
         <button type="submit" class="btn btn-success">Adaugă</button>
