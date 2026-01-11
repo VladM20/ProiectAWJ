@@ -4,62 +4,67 @@
     <title>Organizer Activități</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css">
     <style>
-        .progress { height: 20px; }
+        .tree-indent { margin-left: 40px; border-left: 2px solid #ddd; padding-left: 10px; }
+        .act-completed { text-decoration: line-through; color: gray; }
     </style>
 </head>
 <body>
 <div class="container my-5">
-    <h1>Lista Activități</h1>
+    <h1>Lista Activități (Tree View)</h1>
     <a th:href="@{/formularActivitate}" class="btn btn-primary mb-3">Adaugă Activitate Nouă</a>
 
-    <table border="1" class="table table-striped table-bordered">
-        <thead class="thead-dark">
-        <tr>
-            <th>Activitate</th>
-            <th>Stare</th>
-            <th>Progres</th>
-            <th>Tip</th>
-            <th>Acțiuni</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr th:each="act : ${listaActivitati}">
-            <td>
-                <strong th:text="${act.nume}"></strong><br>
-                <small th:text="${act.descriere}" class="text-muted"></small>
-            </td>
+    <div class="list-group">
+        <div th:each="act : ${listaActivitati}" class="list-group-item">
 
-            <td th:switch="${act.stare}">
-                <span th:case="'FINALIZATA'" class="badge badge-success">Finalizată</span>
-                <span th:case="'IN_DESFASURARE'" class="badge badge-primary">În lucru</span>
-                <span th:case="'SUSPENDATA'" class="badge badge-warning">Suspendată</span>
-                <span th:case="*" class="badge badge-secondary">Planificată</span>
-            </td>
-
-            <td>
-                <div class="progress">
-                    <div class="progress-bar bg-info" role="progressbar"
-                         th:style="'width: ' + ${act.progres} + '%'"
-                         th:text="${act.progres} + '%'"></div>
+            <div class="d-flex w-100 justify-content-between align-items-center">
+                <div th:if="${#lists.isEmpty(act.indicatori)}">
+                    <a th:href="@{/toggleActivitate/{id}(id=${act.id})}" style="text-decoration: none;">
+                        <h4 class="mb-1">
+                            <span th:if="${act.stare == 'FINALIZATA'}">☑️</span>
+                            <span th:unless="${act.stare == 'FINALIZATA'}">⬜</span>
+                            <span th:text="${act.nume}" th:class="${act.stare == 'FINALIZATA'} ? 'act-completed' : ''"></span>
+                        </h4>
+                    </a>
                 </div>
-            </td>
 
-            <td>
-                <span th:if="${act.repetitiva}">♻️ Repetitivă</span>
-                <span th:unless="${act.repetitiva}">Unică</span>
-            </td>
+                <div th:unless="${#lists.isEmpty(act.indicatori)}">
+                    <h4 class="mb-1" th:text="${act.nume}"></h4>
+                </div>
 
-            <td>
-                <a th:href="@{/editeazaActivitate/{id}(id=${act.id})}" class="btn btn-sm btn-primary">Edit</a>
-                <a th:href="@{/stergeActivitate/{id}(id=${act.id})}" class="btn btn-sm btn-danger"
-                   onclick="return confirm('Ești sigur că vrei să ștergi această activitate?');">Sterge</a>
-            </td>
-        </tr>
-        </tbody>
-    </table>
+                <span>
+                    <span th:text="${act.stare}" class="badge badge-info"></span>
+                    <span th:text="'Progres: ' + ${act.progres} + '%'" class="badge badge-secondary ml-2"></span>
+                </span>
+            </div>
 
-    <div th:if="${#lists.isEmpty(listaActivitati)}">
-        <div class="alert alert-info">Nu ai nicio activitate planificată. Adaugă una!</div>
+            <p class="mb-1" th:text="${act.descriere}"></p>
+
+            <div class="mb-2">
+                <a th:href="@{/adaugaIndicator/{id}(id=${act.id})}" class="btn btn-sm btn-outline-success">+ Adaugă Indicator</a>
+                <a th:href="@{/editeazaActivitate/{id}(id=${act.id})}" class="btn btn-sm btn-primary">Editează</a>
+                <a th:href="@{/stergeActivitate/{id}(id=${act.id})}" class="btn btn-sm btn-danger" onclick="return confirm('Ștergi activitatea?');">Șterge</a>
+            </div>
+
+            <div th:if="${not #lists.isEmpty(act.indicatori)}" class="tree-indent mt-2">
+                <h6>Indicatori Cheie:</h6>
+                <ul class="list-group list-group-flush">
+                    <li th:each="ind : ${act.indicatori}" class="list-group-item bg-light p-2">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <a th:href="@{/toggleIndicator/{id}(id=${ind.id})}" class="text-dark" style="text-decoration: none;">
+                                <span th:if="${ind.realizat}">✅</span>
+                                <span th:unless="${ind.realizat}">⬜</span>
+                                <span th:text="${ind.nume} + ' (' + ${ind.pondere} + '%)'"></span>
+                            </a>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+
+        </div>
+    </div>
+
+    <div th:if="${#lists.isEmpty(listaActivitati)}" class="alert alert-warning mt-3">
+        Nu exista activitati.
     </div>
 </div>
 </body>

@@ -17,6 +17,8 @@ public class ActivitateController {
 
     @Autowired
     private ActivitateRepository activitateRepository;
+    @Autowired
+    private IndicatorRepository indicatorRepository;
 
     @GetMapping("/")
     public String viewHomePage(Model model) {
@@ -24,10 +26,11 @@ public class ActivitateController {
         return "index";
     }
 
+    // --- LOGICA PENTRU ACTIVITATI ---
+
     @GetMapping("/formularActivitate")
     public String showNewActivityForm(Model model) {
-        Activitate activitate = new Activitate();
-        model.addAttribute("activitate", activitate);
+        model.addAttribute("activitate", new Activitate());
         return "form_activitate";
     }
 
@@ -36,20 +39,14 @@ public class ActivitateController {
         if (result.hasErrors()) {
             return "form_activitate";
         }
-
-        // Logica simpla: Daca e finalizata, punem progres 100% automat
-        if ("FINALIZATA".equals(activitate.getStare())) {
-            activitate.setProgres(100);
-        }
-
+        // La creare, progresul e 0. Calculul se face doar la modificarea indicatorilor.
         activitateRepository.save(activitate);
         return "redirect:/";
     }
 
     @GetMapping("/editeazaActivitate/{id}")
     public String showFormForUpdate(@PathVariable(value = "id") Long id, Model model) {
-        Activitate activitate = activitateRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Invalid ID:" + id));
+        Activitate activitate = activitateRepository.findById(id).orElse(null);
         model.addAttribute("activitate", activitate);
         return "form_activitate";
     }
@@ -58,5 +55,91 @@ public class ActivitateController {
     public String deleteActivity(@PathVariable(value = "id") Long id) {
         this.activitateRepository.deleteById(id);
         return "redirect:/";
+    }
+
+    // --- LOGICA PENTRU INDICATORI ---
+
+    // Pagina pentru a adauga un indicator nou la o activitate
+    @GetMapping("/adaugaIndicator/{idActivitate}")
+    public String showAddIndicatorForm(@PathVariable Long idActivitate, Model model) {
+        Activitate activitate = activitateRepository.findById(idActivitate).orElseThrow();
+        Indicator indicator = new Indicator();
+        indicator.setActivitate(activitate); // Legam indicatorul de parinte
+
+        model.addAttribute("indicator", indicator);
+        model.addAttribute("numeActivitate", activitate.getNume());
+        return "form_indicator";
+    }
+
+    @PostMapping("/salveazaIndicator")
+    public String saveIndicator(@ModelAttribute("indicator") Indicator indicator) {
+        // Salvam indicatorul
+        indicatorRepository.save(indicator);
+        // Recalculam progresul parintelui
+        updateActivityProgress(indicator.getActivitate().getId());
+        return "redirect:/";
+    }
+
+    // --- LOGICA DINAMICA (CHECKBOXES) ---
+
+    // 1. Toggle pentru o activitate SIMPLA (fara indicatori)
+    @GetMapping("/toggleActivitate/{id}")
+    public String toggleActivitateSimpla(@PathVariable Long id) {
+        Activitate act = activitateRepository.findById(id).orElseThrow();
+
+        // Daca e finalizata o trecem in planificata, si invers
+        if ("FINALIZATA".equals(act.getStare())) {
+            act.setStare("PLANIFICATA");
+            act.setProgres(0);
+        } else {
+            act.setStare("FINALIZATA");
+            act.setProgres(100);
+        }
+        activitateRepository.save(act);
+        return "redirect:/";
+    }
+
+    // 2. Toggle pentru un INDICATOR (Activitate complexa)
+    @GetMapping("/toggleIndicator/{id}")
+    public String toggleIndicator(@PathVariable Long id) {
+        Indicator ind = indicatorRepository.findById(id).orElseThrow();
+
+        // Schimbam starea checkbox-ului
+        ind.setRealizat(!ind.isRealizat());
+        indicatorRepository.save(ind);
+
+        // Recalculam parintele
+        updateActivityProgress(ind.getActivitate().getId());
+
+        return "redirect:/";
+    }
+
+    // Metoda privata pentru recalculare automata
+    private void updateActivityProgress(Long activitateId) {
+        Activitate act = activitateRepository.findById(activitateId).orElseThrow();
+
+        if (act.getIndicatori().isEmpty()) return;
+
+        int totalCalculat = 0;
+        for (Indicator ind : act.getIndicatori()) {
+            if (ind.isRealizat()) {
+                totalCalculat += ind.getPondere();
+            }
+        }
+
+        // Cap la 100%
+        if (totalCalculat > 100) totalCalculat = 100;
+        act.setProgres(totalCalculat);
+
+        // Actualizare stare automata
+        if (totalCalculat == 100) {
+            act.setStare("FINALIZATA");
+        } else if (totalCalculat > 0) {
+            act.setStare("IN_DESFASURARE");
+        } else {
+            act.setStare("PLANIFICATA");
+        }
+
+        activitateRepository.save(act);
     }
 }

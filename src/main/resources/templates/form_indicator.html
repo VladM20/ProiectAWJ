@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Adauga Indicator</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css">
+</head>
+<body>
+<div class="container my-5">
+    <h3>Adaugă Indicator pentru: <span th:text="${numeActivitate}" class="text-primary"></span></h3>
+
+    <form action="#" th:action="@{/salveazaIndicator}" th:object="${indicator}" method="POST">
+        <input type="hidden" th:field="*{activitate}" />
+
+        <div class="form-group">
+            <label>Nume Indicator</label>
+            <input type="text" th:field="*{nume}" class="form-control" required>
+        </div>
+
+        <div class="form-group">
+            <label>Pondere din total (%)</label>
+            <input type="number" th:field="*{pondere}" class="form-control" min="1" max="100" required>
+            <small class="form-text text-muted">Cât la sută din activitate reprezintă acest task?</small>
+        </div>
+
+        <button type="submit" class="btn btn-success">Adaugă</button>
+        <a th:href="@{/}" class="btn btn-secondary">Înapoi</a>
+    </form>
+</div>
+</body>
+</html>
