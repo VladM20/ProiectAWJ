@@ -8,9 +8,15 @@
     <style>
         .tree-indent { margin-left: 30px; border-left: 3px solid #e9ecef; padding-left: 15px; }
         .act-completed { text-decoration: line-through; color: #aaa; }
-        .hidden-form { display: none; }
+        .hidden { display: none !important; } /* Clasa utilitara critica */
+
         .card-activity { transition: all 0.3s; border-left: 5px solid #007bff; }
         .card-completed { border-left: 5px solid #28a745; background-color: #f8f9fa; }
+
+        /* Butoane discrete */
+        .btn-icon { color: #6c757d; cursor: pointer; border: none; background: none; padding: 0 5px; }
+        .btn-icon:hover { color: #007bff; }
+        .btn-icon-sm { font-size: 0.8rem; }
     </style>
 </head>
 <body class="bg-light">
@@ -21,9 +27,9 @@
     <div class="card shadow-sm mb-5">
         <div class="card-body bg-white">
             <h5 class="card-title text-muted">📝 Adaugă o activitate nouă</h5>
-            <form action="/adaugaActivitateRapida" method="POST" class="form-inline d-flex">
-                <input type="text" name="nume" class="form-control flex-grow-1 mr-2" placeholder="Nume activitate (ex: Proiect Java)" required>
-                <input type="text" name="descriere" class="form-control flex-grow-1 mr-2" placeholder="Descriere scurtă (opțional)">
+            <form action="/adaugaActivitateRapida" method="POST" class="d-flex">
+                <input type="text" name="nume" class="form-control flex-grow-1 mr-2" placeholder="Titlu activitate..." required>
+                <input type="text" name="descriere" class="form-control flex-grow-1 mr-2" placeholder="Descriere (opțional)">
                 <button type="submit" class="btn btn-primary"><i class="fas fa-plus"></i> Adaugă</button>
             </form>
         </div>
@@ -35,93 +41,113 @@
 
             <div class="card-body py-3">
 
-                <div class="d-flex justify-content-between align-items-center">
-
-                    <div class="d-flex align-items-center flex-grow-1">
+                <div th:id="'view-title-' + ${act.id}" class="d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center w-100">
                         <div th:if="${#lists.isEmpty(act.indicatori)}" class="mr-3">
                             <a th:href="@{/toggleActivitate/{id}(id=${act.id})}" class="text-decoration-none">
                                 <i class="far fa-square fa-lg text-secondary" th:if="${act.stare != 'FINALIZATA'}"></i>
                                 <i class="fas fa-check-square fa-lg text-success" th:if="${act.stare == 'FINALIZATA'}"></i>
                             </a>
                         </div>
-
-                        <div th:id="'view-act-' + ${act.id}" class="w-100">
-                            <h4 class="mb-0 d-inline-block"
-                                th:text="${act.nume}"
-                                th:classappend="${act.stare == 'FINALIZATA'} ? 'act-completed' : ''">
-                            </h4>
-                            <small class="text-muted ml-2" th:text="${act.descriere}"></small>
-                            <button class="btn btn-link btn-sm text-muted p-0 ml-2"
-                                    th:onclick="'toggleEditActivity(' + ${act.id} + ')'" title="Redenumește">
-                                <i class="fas fa-pencil-alt"></i>
-                            </button>
+                        <div th:unless="${#lists.isEmpty(act.indicatori)}" class="mr-3">
+                            <i class="fas fa-list-ul text-muted" title="Progres calculat automat"></i>
                         </div>
 
-                        <form th:id="'edit-act-' + ${act.id}" action="/redenumesteActivitate" method="POST" class="hidden-form w-100 d-flex">
-                            <input type="hidden" name="id" th:value="${act.id}">
-                            <input type="text" name="nume" th:value="${act.nume}" class="form-control form-control-sm mr-2">
-                            <button type="submit" class="btn btn-success btn-sm mr-1"><i class="fas fa-check"></i></button>
-                            <button type="button" class="btn btn-secondary btn-sm" th:onclick="'toggleEditActivity(' + ${act.id} + ')'"><i class="fas fa-times"></i></button>
-                        </form>
+                        <h4 class="mb-0 font-weight-bold"
+                            th:text="${act.nume}"
+                            th:classappend="${act.stare == 'FINALIZATA'} ? 'act-completed' : ''">
+                        </h4>
+
+                        <button class="btn-icon ml-2" th:onclick="'toggleSection(' + ${act.id} + ', \'title\')'" title="Editează Titlul">
+                            <i class="fas fa-pencil-alt"></i>
+                        </button>
                     </div>
 
-                    <div class="ml-3 text-right" style="min-width: 150px;">
-                        <span class="badge badge-pill"
+                    <div class="d-flex align-items-center" style="min-width: 160px; justify-content: flex-end;">
+                        <span class="badge badge-pill mr-3"
                               th:classappend="${act.stare == 'FINALIZATA'} ? 'badge-success' : 'badge-primary'"
                               th:text="${act.stare == 'FINALIZATA'} ? 'FINALIZAT' : ${act.progres} + '%'">
                         </span>
-                        <a th:href="@{/stergeActivitate/{id}(id=${act.id})}" class="text-danger ml-3"
+                        <a th:href="@{/stergeActivitate/{id}(id=${act.id})}" class="text-danger"
                            onclick="return confirm('Sigur stergi?')" title="Șterge Activitatea">
-                            <i class="fas fa-trash-alt"></i>
+                            <i class="fas fa-trash-alt fa-lg"></i>
                         </a>
                     </div>
                 </div>
 
-                <div class="tree-indent mt-3">
+                <form th:id="'edit-title-' + ${act.id}" action="/redenumesteActivitate" method="POST" class="hidden w-100 d-flex align-items-center">
+                    <input type="hidden" name="id" th:value="${act.id}">
+                    <input type="text" name="nume" th:value="${act.nume}" class="form-control form-control-lg mr-2 font-weight-bold" autoFocus>
+                    <button type="submit" class="btn btn-success mr-2">Salvează</button>
+                    <button type="button" class="btn btn-secondary" th:onclick="'toggleSection(' + ${act.id} + ', \'title\')'">Anulează</button>
+                </form>
 
-                    <div th:each="ind : ${act.indicatori}" class="mb-2 d-flex align-items-center group-hover">
-                        <a th:href="@{/toggleIndicator/{id}(id=${ind.id})}" class="text-dark mr-2">
+
+                <div style="margin-left: 45px;" class="mt-2">
+
+                    <div th:id="'view-desc-' + ${act.id}" class="d-flex align-items-center text-muted">
+                        <i class="fas fa-info-circle mr-2"></i>
+
+                        <span th:if="${act.descriere != null and !act.descriere.isEmpty()}" th:text="${act.descriere}"></span>
+                        <span th:if="${act.descriere == null or act.descriere.isEmpty()}" class="font-italic text-black-50 small">Fără descriere...</span>
+
+                        <button class="btn-icon btn-icon-sm ml-2" th:onclick="'toggleSection(' + ${act.id} + ', \'desc\')'" title="Editează Descrierea">
+                            <i class="fas fa-pencil-alt"></i>
+                        </button>
+                    </div>
+
+                    <form th:id="'edit-desc-' + ${act.id}" action="/editeazaDescriere" method="POST" class="hidden mt-2">
+                        <input type="hidden" name="id" th:value="${act.id}">
+                        <div class="input-group">
+                            <input type="text" name="descriere" th:value="${act.descriere}" class="form-control form-control-sm" placeholder="Descriere...">
+                            <div class="input-group-append">
+                                <button class="btn btn-success btn-sm" type="submit">OK</button>
+                                <button class="btn btn-secondary btn-sm" type="button" th:onclick="'toggleSection(' + ${act.id} + ', \'desc\')'">X</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+
+                <div class="tree-indent mt-3">
+                    <div th:each="ind : ${act.indicatori}" class="mb-2 d-flex align-items-center">
+                        <a th:href="@{/toggleIndicator/{id}(id=${ind.id})}" class="text-dark mr-2 text-decoration-none">
                             <i class="far fa-square text-secondary" th:unless="${ind.realizat}"></i>
                             <i class="fas fa-check-square text-success" th:if="${ind.realizat}"></i>
+                            <span th:text="${ind.nume}" th:classappend="${ind.realizat} ? 'act-completed' : ''" class="ml-1"></span>
                         </a>
-                        <span th:text="${ind.nume}" th:classappend="${ind.realizat} ? 'act-completed' : ''"></span>
-
-                        <a th:href="@{/stergeIndicator/{id}(id=${ind.id})}" class="text-danger ml-auto btn-sm">
+                        <a th:href="@{/stergeIndicator/{id}(id=${ind.id})}" class="text-danger ml-auto btn-sm opacity-50 hover-opacity-100">
                             <i class="fas fa-times"></i>
                         </a>
                     </div>
 
-                    <form action="/adaugaIndicatorRapid" method="POST" class="mt-3 d-flex" style="max-width: 400px;">
+                    <form action="/adaugaIndicatorRapid" method="POST" class="mt-2 d-flex" style="max-width: 400px;">
                         <input type="hidden" name="activitateId" th:value="${act.id}">
                         <input type="text" name="nume" class="form-control form-control-sm mr-2" placeholder="+ Adaugă sub-task..." required>
-                        <button type="submit" class="btn btn-outline-secondary btn-sm">Adaugă</button>
+                        <button type="submit" class="btn btn-light btn-sm border">Add</button>
                     </form>
-
                 </div>
-            </div>
-        </div>
 
-        <div th:if="${#lists.isEmpty(listaActivitati)}" class="text-center mt-5 text-muted">
-            <h3>📭 Lista e goală</h3>
-            <p>Folosește formularul de sus pentru a începe.</p>
+            </div>
         </div>
     </div>
 </div>
 
 <script>
-    function toggleEditActivity(id) {
-        var viewMode = document.getElementById('view-act-' + id);
-        var editMode = document.getElementById('edit-act-' + id);
+    function toggleSection(id, type) {
+        // type poate fi 'title' sau 'desc'
+        let viewEl = document.getElementById('view-' + type + '-' + id);
+        let editEl = document.getElementById('edit-' + type + '-' + id);
 
-        if (viewMode.style.display === 'none') {
-            viewMode.style.display = 'block';
-            editMode.style.display = 'none'; // revine la normal, ascunde formularul
-            editMode.classList.add('hidden-form');
-            editMode.classList.remove('d-flex');
+        // Verificam daca formularul de editare are clasa 'hidden'
+        if (editEl.classList.contains('hidden')) {
+            // Mod EDITARE: Ascundem View, Aratam Edit
+            viewEl.classList.add('hidden');
+            editEl.classList.remove('hidden');
         } else {
-            viewMode.style.display = 'none'; // ascunde textul
-            editMode.classList.remove('hidden-form'); // afiseaza formularul
-            editMode.classList.add('d-flex');
+            // Mod VIZUALIZARE: Ascundem Edit, Aratam View
+            editEl.classList.add('hidden');
+            viewEl.classList.remove('hidden');
         }
     }
 </script>

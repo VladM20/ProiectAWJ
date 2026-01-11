@@ -27,6 +27,17 @@ public class ActivitateController {
         return "index";
     }
 
+    @PostMapping("/editeazaDescriere")
+    public String editeazaDescriere(@RequestParam("id") Long id,
+                                    @RequestParam("descriere") String descriereNoua) {
+        Activitate act = activitateRepository.findById(id).orElse(null);
+        if (act != null) {
+            act.setDescriere(descriereNoua);
+            activitateRepository.save(act);
+        }
+        return "redirect:/";
+    }
+
     // --- ADAUGARE RAPIDA ACTIVITATE ---
     @PostMapping("/adaugaActivitateRapida")
     public String adaugaActivitateRapida(@RequestParam("nume") String nume,
