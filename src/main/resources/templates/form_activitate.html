@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Gestionează Activitate</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css">
+</head>
+<body>
+<div class="container my-5">
+    <h1 th:text="${activitate.id == null} ? 'Adaugă Activitate' : 'Editează Activitate'"></h1>
+
+    <form action="#" th:action="@{/salveazaActivitate}" th:object="${activitate}" method="POST">
+        <input type="hidden" th:field="*{id}" />
+
+        <div class="form-group">
+            <label>Nume Activitate</label>
+            <input type="text" th:field="*{nume}" class="form-control" placeholder="Ex: Proiect Java">
+            <span th:if="${#fields.hasErrors('nume')}" th:errors="*{nume}" class="text-danger"></span>
+        </div>
+
+        <div class="form-group">
+            <label>Descriere (Indicatori cheie)</label>
+            <textarea th:field="*{descriere}" class="form-control" rows="3"></textarea>
+        </div>
+
+        <div class="row">
+            <div class="col-md-4 form-group">
+                <label>Stare</label>
+                <select th:field="*{stare}" class="form-control">
+                    <option value="PLANIFICATA">Planificată</option>
+                    <option value="IN_DESFASURARE">În Desfășurare</option>
+                    <option value="SUSPENDATA">Suspendată</option>
+                    <option value="FINALIZATA">Finalizată</option>
+                </select>
+            </div>
+
+            <div class="col-md-4 form-group">
+                <label>Progres (%)</label>
+                <input type="number" th:field="*{progres}" class="form-control" min="0" max="100">
+                <span th:if="${#fields.hasErrors('progres')}" th:errors="*{progres}" class="text-danger"></span>
+            </div>
+
+            <div class="col-md-4 form-group d-flex align-items-center mt-4">
+                <div class="form-check">
+                    <input type="checkbox" th:field="*{repetitiva}" class="form-check-input" id="rep">
+                    <label class="form-check-label" for="rep">Activitate Repetitivă?</label>
+                </div>
+            </div>
+        </div>
+
+        <button type="submit" class="btn btn-success mt-3">Salvează</button>
+        <a th:href="@{/}" class="btn btn-secondary mt-3 ml-2">Anulează</a>
+    </form>
+</div>
+</body>
+</html>

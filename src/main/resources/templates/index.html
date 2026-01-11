@@ -1,40 +1,65 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title>Lista Studenti</title>
+    <title>Organizer Activități</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css">
+    <style>
+        .progress { height: 20px; }
+    </style>
 </head>
 <body>
 <div class="container my-5">
-    <h1>Lista Studenti</h1>
-    <a th:href="@{/showNewStudentForm}" class="btn btn-primary btn-sm mb-3">Adauga Student</a>
+    <h1>Lista Activități</h1>
+    <a th:href="@{/formularActivitate}" class="btn btn-primary mb-3">Adaugă Activitate Nouă</a>
 
-    <table border="1" class="table table-striped table-responsive-md">
-        <thead>
+    <table border="1" class="table table-striped table-bordered">
+        <thead class="thead-dark">
         <tr>
-            <th>Nume</th>
-            <th>Prenume</th>
-            <th>Email</th>
-            <th>Actiuni</th>
+            <th>Activitate</th>
+            <th>Stare</th>
+            <th>Progres</th>
+            <th>Tip</th>
+            <th>Acțiuni</th>
         </tr>
         </thead>
         <tbody>
-        <tr th:each="student : ${listaStudenti}">
-            <td th:text="${student.nume}"></td>
-            <td th:text="${student.prenume}"></td>
-            <td th:text="${student.email}"></td>
+        <tr th:each="act : ${listaActivitati}">
             <td>
-                <a th:href="@{/showFormForUpdate/{id}(id=${student.id})}" class="btn btn-primary btn-sm">Editeaza</a>
+                <strong th:text="${act.nume}"></strong><br>
+                <small th:text="${act.descriere}" class="text-muted"></small>
+            </td>
 
-                <a th:href="@{/deleteStudent/{id}(id=${student.id})}" class="btn btn-danger btn-sm"
-                   onclick="return confirm('Esti sigur ca vrei sa stergi acest student? Aceasta actiune este ireversibila.');">Sterge</a>
+            <td th:switch="${act.stare}">
+                <span th:case="'FINALIZATA'" class="badge badge-success">Finalizată</span>
+                <span th:case="'IN_DESFASURARE'" class="badge badge-primary">În lucru</span>
+                <span th:case="'SUSPENDATA'" class="badge badge-warning">Suspendată</span>
+                <span th:case="*" class="badge badge-secondary">Planificată</span>
+            </td>
+
+            <td>
+                <div class="progress">
+                    <div class="progress-bar bg-info" role="progressbar"
+                         th:style="'width: ' + ${act.progres} + '%'"
+                         th:text="${act.progres} + '%'"></div>
+                </div>
+            </td>
+
+            <td>
+                <span th:if="${act.repetitiva}">♻️ Repetitivă</span>
+                <span th:unless="${act.repetitiva}">Unică</span>
+            </td>
+
+            <td>
+                <a th:href="@{/editeazaActivitate/{id}(id=${act.id})}" class="btn btn-sm btn-primary">Edit</a>
+                <a th:href="@{/stergeActivitate/{id}(id=${act.id})}" class="btn btn-sm btn-danger"
+                   onclick="return confirm('Ești sigur că vrei să ștergi această activitate?');">Sterge</a>
             </td>
         </tr>
         </tbody>
     </table>
 
-    <div th:if="${listaStudenti.isEmpty()}">
-        <p>Nu exista studenti in baza de date.</p>
+    <div th:if="${#lists.isEmpty(listaActivitati)}">
+        <div class="alert alert-info">Nu ai nicio activitate planificată. Adaugă una!</div>
     </div>
 </div>
 </body>
