@@ -10,5 +10,6 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface ActivitateRepository extends JpaRepository<Activitate, Long> {
-
+    // Verifica daca exista o activitate cu acest nume (case insensitive)
+    boolean existsByNumeIgnoreCase(String nume);
 }
