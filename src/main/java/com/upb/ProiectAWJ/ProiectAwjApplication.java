@@ -14,5 +14,4 @@ public class ProiectAwjApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(ProiectAwjApplication.class, args);
 	}
-
 }

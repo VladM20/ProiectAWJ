@@ -1,4 +1,4 @@
-/** Clasa pentru Controller, intermediaza View si Model
+/** Clasa pentru Controller, contine metodele folosite in aplicatie
  * @author Moișanu Cristian-Vlad
  * @version 11 Ianuarie 2026
  */
@@ -21,7 +21,7 @@ public class ActivitateController {
     @Autowired
     private IndicatorRepository indicatorRepository;
 
-    // --- 1. AFISARE PAGINA PRINCIPALA (Cu Sortare) ---
+    // Pagina Principala
     @GetMapping("/")
     public String viewHomePage(Model model, @RequestParam(value = "sort", required = false) String sort) {
 
@@ -42,7 +42,7 @@ public class ActivitateController {
         return "index";
     }
 
-    // --- 2. ADAUGARE ACTIVITATE (Cu Verificare Duplicate) ---
+    // Adaugare Activitate
     @PostMapping("/adaugaActivitateRapida")
     public String adaugaActivitateRapida(@RequestParam("nume") String nume,
                                          @RequestParam("descriere") String descriere,
@@ -50,11 +50,11 @@ public class ActivitateController {
 
         // Verificare duplicate
         if (activitateRepository.existsByNumeIgnoreCase(nume.trim())) {
-            redirectAttributes.addFlashAttribute("eroare", "O activitate cu numele '" + nume + "' există deja!");
+            redirectAttributes.addFlashAttribute("eroare", "O activitate cu numele '" + nume.trim() + "' există deja!");
             return "redirect:/";
         }
 
-        if (nume != null && !nume.trim().isEmpty()) {
+        if (!nume.trim().isEmpty()) {
             Activitate act = new Activitate();
             act.setNume(nume.trim());
             act.setDescriere(descriere);
@@ -63,7 +63,7 @@ public class ActivitateController {
         return "redirect:/";
     }
 
-    // --- 3. REDENUMIRE ACTIVITATE (Cu Verificare Duplicate) ---
+    // Redenumire Activitate
     @PostMapping("/redenumesteActivitate")
     public String redenumesteActivitate(@RequestParam("id") Long id,
                                         @RequestParam("nume") String numeNou,
@@ -72,11 +72,11 @@ public class ActivitateController {
         Activitate actCurenta = activitateRepository.findById(id).orElse(null);
 
         if (actCurenta != null && numeNou != null && !numeNou.trim().isEmpty()) {
-            // Daca numele e diferit de cel vechi SI deja exista in baza de date
+            // Daca numele e diferit de cel vechi si deja exista in baza de date
             if (!actCurenta.getNume().equalsIgnoreCase(numeNou.trim()) &&
                     activitateRepository.existsByNumeIgnoreCase(numeNou.trim())) {
 
-                redirectAttributes.addFlashAttribute("eroare", "Nu poți redenumi: Numele '" + numeNou + "' este deja folosit!");
+                redirectAttributes.addFlashAttribute("eroare", "Nu poți redenumi: Numele '" + numeNou.trim() + "' este deja folosit!");
                 return "redirect:/";
             }
 
@@ -86,7 +86,7 @@ public class ActivitateController {
         return "redirect:/";
     }
 
-    // --- 4. EDITARE DESCRIERE ---
+    // Editare Descriere
     @PostMapping("/editeazaDescriere")
     public String editeazaDescriere(@RequestParam("id") Long id,
                                     @RequestParam("descriere") String descriereNoua) {
@@ -98,7 +98,7 @@ public class ActivitateController {
         return "redirect:/";
     }
 
-    // --- 5. ADAUGARE INDICATOR (Cu Verificare Duplicate) ---
+    // Adaugare Indicator
     @PostMapping("/adaugaIndicatorRapid")
     public String adaugaIndicatorRapid(@RequestParam("activitateId") Long activitateId,
                                        @RequestParam("nume") String nume,
@@ -108,9 +108,9 @@ public class ActivitateController {
 
         if (act != null && nume != null && !nume.trim().isEmpty()) {
 
-            // Verificare: Exista acest indicator DEJA in aceasta activitate?
+            // Verifica daca exista acest indicator deja in aceasta activitate
             if (indicatorRepository.existsByNumeIgnoreCaseAndActivitate(nume.trim(), act)) {
-                redirectAttributes.addFlashAttribute("eroare", "Indicatorul '" + nume + "' există deja în această activitate!");
+                redirectAttributes.addFlashAttribute("eroare", "Indicatorul '" + nume.trim() + "' există deja în această activitate!");
                 return "redirect:/";
             }
 
@@ -124,14 +124,14 @@ public class ActivitateController {
         return "redirect:/";
     }
 
-    // --- 6. STERGERE SI TOGGLE (Restul metodelor standard) ---
-
+    // Stergere Activitate
     @GetMapping("/stergeActivitate/{id}")
     public String deleteActivity(@PathVariable(value = "id") Long id) {
         this.activitateRepository.deleteById(id);
         return "redirect:/";
     }
 
+    // Stergere Indicator
     @GetMapping("/stergeIndicator/{id}")
     public String deleteIndicator(@PathVariable(value = "id") Long id) {
         Indicator ind = indicatorRepository.findById(id).orElseThrow();
@@ -141,6 +141,7 @@ public class ActivitateController {
         return "redirect:/";
     }
 
+    // Toggle Indicator realizat sau nu
     @GetMapping("/toggleIndicator/{id}")
     public String toggleIndicator(@PathVariable Long id) {
         Indicator ind = indicatorRepository.findById(id).orElseThrow();
@@ -150,6 +151,7 @@ public class ActivitateController {
         return "redirect:/";
     }
 
+    // Toggle Activitate fara indicatori
     @GetMapping("/toggleActivitate/{id}")
     public String toggleActivitateSimpla(@PathVariable Long id) {
         Activitate act = activitateRepository.findById(id).orElseThrow();
@@ -166,7 +168,7 @@ public class ActivitateController {
         return "redirect:/";
     }
 
-    // --- LOGICA PRIVATA DE CALCUL ---
+    // Calculul Procentului de Progres
     private void updateActivityProgress(Long activitateId) {
         Activitate act = activitateRepository.findById(activitateId).orElseThrow();
         List<Indicator> lista = act.getIndicatori();

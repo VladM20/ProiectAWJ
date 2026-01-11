@@ -1,4 +1,4 @@
-/** Clasa pentru definirea Indicatorilor (Sub-task-uri).
+/** Clasa pentru definirea Indicatorilor
  * @author Moișanu Cristian-Vlad
  * @version 11 Ianuarie 2026
  */
@@ -20,11 +20,12 @@ public class Indicator {
 
     private boolean realizat = false;
 
+    // Relatia cu Activitate
     @ManyToOne
     @JoinColumn(name = "activitate_id", nullable = false)
     private Activitate activitate;
 
-    // --- Getters si Setters ---
+    // Getters & Setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
     public String getNume() { return nume; }

@@ -10,6 +10,6 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface IndicatorRepository extends JpaRepository<Indicator, Long> {
-    // Verifica daca exista un indicator cu acest nume in activitatea specifica
+    // Verifica daca exista un indicator cu acest nume in activitatea specificata
     boolean existsByNumeIgnoreCaseAndActivitate(String nume, Activitate activitate);
 }
