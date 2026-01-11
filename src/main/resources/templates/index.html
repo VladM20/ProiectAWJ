@@ -8,12 +8,11 @@
     <style>
         .tree-indent { margin-left: 30px; border-left: 3px solid #e9ecef; padding-left: 15px; }
         .act-completed { text-decoration: line-through; color: #aaa; }
-        .hidden { display: none !important; } /* Clasa utilitara critica */
+        .hidden { display: none !important; }
 
         .card-activity { transition: all 0.3s; border-left: 5px solid #007bff; }
         .card-completed { border-left: 5px solid #28a745; background-color: #f8f9fa; }
 
-        /* Butoane discrete */
         .btn-icon { color: #6c757d; cursor: pointer; border: none; background: none; padding: 0 5px; }
         .btn-icon:hover { color: #007bff; }
         .btn-icon-sm { font-size: 0.8rem; }
@@ -24,7 +23,7 @@
 <div class="container my-5">
     <h2 class="text-center mb-4">Planificator Activități</h2>
 
-    <div class="card shadow-sm mb-5">
+    <div class="card shadow-sm mb-4">
         <div class="card-body bg-white">
             <h5 class="card-title text-muted">📝 Adaugă o activitate nouă</h5>
             <form action="/adaugaActivitateRapida" method="POST" class="d-flex">
@@ -32,6 +31,24 @@
                 <input type="text" name="descriere" class="form-control flex-grow-1 mr-2" placeholder="Descriere (opțional)">
                 <button type="submit" class="btn btn-primary"><i class="fas fa-plus"></i> Adaugă</button>
             </form>
+        </div>
+    </div>
+
+    <div class="d-flex justify-content-end mb-3 align-items-center">
+        <span class="mr-2 text-muted">Sortează după progres:</span>
+        <div class="btn-group" role="group">
+            <a href="/" class="btn btn-outline-secondary btn-sm"
+               th:classappend="${sortareCurenta == null} ? 'active' : ''">Implicit</a>
+
+            <a href="/?sort=crescator" class="btn btn-outline-secondary btn-sm"
+               th:classappend="${sortareCurenta == 'crescator'} ? 'active' : ''">
+                <i class="fas fa-arrow-up"></i> 0% &rarr; 100%
+            </a>
+
+            <a href="/?sort=descrescator" class="btn btn-outline-secondary btn-sm"
+               th:classappend="${sortareCurenta == 'descrescator'} ? 'active' : ''">
+                <i class="fas fa-arrow-down"></i> 100% &rarr; 0%
+            </a>
         </div>
     </div>
 
@@ -58,18 +75,24 @@
                             th:classappend="${act.stare == 'FINALIZATA'} ? 'act-completed' : ''">
                         </h4>
 
-                        <button class="btn-icon ml-2" th:onclick="'toggleSection(' + ${act.id} + ', \'title\')'" title="Editează Titlul">
+                        <button class="btn-icon ml-2" th:onclick="'toggleSection(' + ${act.id} + ', \'title\')'">
                             <i class="fas fa-pencil-alt"></i>
                         </button>
                     </div>
 
-                    <div class="d-flex align-items-center" style="min-width: 160px; justify-content: flex-end;">
-                        <span class="badge badge-pill mr-3"
-                              th:classappend="${act.stare == 'FINALIZATA'} ? 'badge-success' : 'badge-primary'"
-                              th:text="${act.stare == 'FINALIZATA'} ? 'FINALIZAT' : ${act.progres} + '%'">
+                    <div class="d-flex align-items-center" style="min-width: 180px; justify-content: flex-end;">
+
+                        <span th:if="${act.progres == 0}" class="badge badge-secondary badge-pill mr-3">PLANIFICATĂ</span>
+
+                        <span th:if="${act.progres == 100}" class="badge badge-success badge-pill mr-3">FINALIZATĂ</span>
+
+                        <span th:if="${act.progres > 0 and act.progres < 100}"
+                              class="badge badge-primary badge-pill mr-3"
+                              th:text="'ÎN DESFĂȘURARE (' + ${act.progres} + '%)'">
                         </span>
+
                         <a th:href="@{/stergeActivitate/{id}(id=${act.id})}" class="text-danger"
-                           onclick="return confirm('Sigur stergi?')" title="Șterge Activitatea">
+                           onclick="return confirm('Sigur stergi?')" title="Șterge">
                             <i class="fas fa-trash-alt fa-lg"></i>
                         </a>
                     </div>
@@ -82,16 +105,12 @@
                     <button type="button" class="btn btn-secondary" th:onclick="'toggleSection(' + ${act.id} + ', \'title\')'">Anulează</button>
                 </form>
 
-
                 <div style="margin-left: 45px;" class="mt-2">
-
                     <div th:id="'view-desc-' + ${act.id}" class="d-flex align-items-center text-muted">
                         <i class="fas fa-info-circle mr-2"></i>
-
-                        <span th:if="${act.descriere != null and !act.descriere.isEmpty()}" th:text="${act.descriere}"></span>
-                        <span th:if="${act.descriere == null or act.descriere.isEmpty()}" class="font-italic text-black-50 small">Fără descriere...</span>
-
-                        <button class="btn-icon btn-icon-sm ml-2" th:onclick="'toggleSection(' + ${act.id} + ', \'desc\')'" title="Editează Descrierea">
+                        <span th:if="${act.descriere != null and !act.descriere.empty}" th:text="${act.descriere}"></span>
+                        <span th:if="${act.descriere == null or act.descriere.empty}" class="font-italic text-black-50 small">Fără descriere...</span>
+                        <button class="btn-icon btn-icon-sm ml-2" th:onclick="'toggleSection(' + ${act.id} + ', \'desc\')'">
                             <i class="fas fa-pencil-alt"></i>
                         </button>
                     </div>
@@ -107,7 +126,6 @@
                         </div>
                     </form>
                 </div>
-
 
                 <div class="tree-indent mt-3">
                     <div th:each="ind : ${act.indicatori}" class="mb-2 d-flex align-items-center">
@@ -135,17 +153,13 @@
 
 <script>
     function toggleSection(id, type) {
-        // type poate fi 'title' sau 'desc'
-        let viewEl = document.getElementById('view-' + type + '-' + id);
-        let editEl = document.getElementById('edit-' + type + '-' + id);
+        var viewEl = document.getElementById('view-' + type + '-' + id);
+        var editEl = document.getElementById('edit-' + type + '-' + id);
 
-        // Verificam daca formularul de editare are clasa 'hidden'
         if (editEl.classList.contains('hidden')) {
-            // Mod EDITARE: Ascundem View, Aratam Edit
             viewEl.classList.add('hidden');
             editEl.classList.remove('hidden');
         } else {
-            // Mod VIZUALIZARE: Ascundem Edit, Aratam View
             editEl.classList.add('hidden');
             viewEl.classList.remove('hidden');
         }
