@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Student</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css">
+</head>
+<body>
+<div class="container my-5">
+    <h1 th:text="${student.id == null} ? 'Adauga Student Nou' : 'Modifica Student'"></h1>
+
+    <form action="#" th:action="@{/saveStudent}" th:object="${student}" method="POST">
+        <input type="hidden" th:field="*{id}" />
+
+        <input type="text" th:field="*{nume}" placeholder="Nume" class="form-control mb-2 col-4">
+        <div th:if="${#fields.hasErrors('nume')}" th:errors="*{nume}" class="text-danger mb-3"></div>
+
+        <input type="text" th:field="*{prenume}" placeholder="Prenume" class="form-control mb-2 col-4">
+        <div th:if="${#fields.hasErrors('prenume')}" th:errors="*{prenume}" class="text-danger mb-3"></div>
+
+        <input type="text" th:field="*{email}" placeholder="Email" class="form-control mb-2 col-4">
+        <div th:if="${#fields.hasErrors('email')}" th:errors="*{email}" class="text-danger mb-3"></div>
+
+        <button type="submit" class="btn btn-info col-2">Salveaza</button>
+    </form>
+
+    <hr>
+    <a th:href="@{/}">Inapoi la lista</a>
+</div>
+</body>
+</html>
